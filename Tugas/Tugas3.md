@@ -1,0 +1,5 @@
+![check-in](<SS/Screenshot 2025-10-22 184907.png>)
+![check-in lebih dari 2x](<SS/Screenshot 2025-10-22 185758.png>)
+![check-out](<SS/Screenshot 2025-10-22 185832.png>)
+![check-out tanpa check-in](<SS/Screenshot 2025-10-22 185921.png>)
+![daily report](<SS/Screenshot 2025-10-22 190513.png>)

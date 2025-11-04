@@ -1,0 +1,5 @@
+![Tampilan Endpoint update data presensi :](<SS/Screenshot 2025-10-29 093604.png>)
+![Tampilan endpoint berdasarkan nama :](<SS/Screenshot 2025-10-29 095322.png>)
+![Tampilan search berdasarkan tanggal :](SS/image.png)
+![Tampilan Endpoint delete data :](<SS/image copy.png>)
+![Tampilan Endpoint update jika format tanggal yang diisi tidak valid :](<SS/image copy 2.png>)

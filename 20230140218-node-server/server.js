@@ -29,9 +29,11 @@ app.get("/", (req, res) => {
 // ✅ Routing presensi dan laporan
 const presensiRoutes = require("./routes/presensi");
 const reportRoutes = require("./routes/report");
+const authRoutes = require('./routes/auth');
 
 app.use("/api/presensi", presensiRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/auth", authRoutes);
 
 // ✅ 404 Handler
 app.use((req, res) => {

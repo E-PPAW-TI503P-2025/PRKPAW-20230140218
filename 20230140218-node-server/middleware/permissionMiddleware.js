@@ -1,19 +1,31 @@
-exports.addUserData = (req, res, next) => {
-  console.log('Middleware: Menambahkan data user dummy...');
-  req.user = {
-    id: 123,
-    nama: 'User Nayla',
-    role: 'admin'
-  };
-  next(); 
+/* middleware/permissionMiddleware.js */
+
+// Middleware untuk menambahkan user dari JWT (TIDAK mengubah req.user)
+module.exports.addUserData = (req, res, next) => {
+  // Di tahap ini req.user sudah di-set oleh verifyToken
+  // Jadi jangan di-override seperti sebelumnya.
+  
+  if (!req.user) {
+    return res.status(401).json({
+      message: "User belum login"
+    });
+  }
+
+  next();
 };
 
-exports.isAdmin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
-    console.log('Middleware: Izin admin diberikan.');
-    next(); 
-  } else {
-    console.log('Middleware: Gagal! Pengguna bukan admin.');
-    return res.status(403).json({ message: 'Akses ditolak: Hanya untuk admin' });
+// Middleware untuk role admin
+module.exports.isAdmin = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "User belum login" });
   }
+
+  // Case-insensitive untuk keamanan
+  if (req.user.role && req.user.role.toLowerCase() === "admin") {
+    return next();
+  }
+
+  return res.status(403).json({
+    message: "Akses ditolak: hanya admin"
+  });
 };

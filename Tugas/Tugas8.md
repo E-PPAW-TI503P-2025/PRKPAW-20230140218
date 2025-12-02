@@ -1,0 +1,5 @@
+![check-in berhasil](image-7.png)
+![check-out berhasil](image-9.png)
+![Endpoint presensi/check-in dengan menggunakan bearer token dan body latitude, longitude](image-8.png)
+![laporan presensi](image-10.png)
+![database tabel presensi](image-11.png)

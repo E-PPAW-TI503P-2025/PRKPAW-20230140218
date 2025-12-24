@@ -1,54 +1,51 @@
 const express = require("express");
 const cors = require("cors");
-const bodyParser = require("body-parser");
-const morgan = require("morgan");
+const path = require("path"); // ← WAJIB untuk akses folder static
 
 const app = express();
 const PORT = 3001;
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.json());
-app.use(morgan("dev"));
+// IMPORT ROUTES
+const bookRoutes = require("./routes/books");
+const presensiRoutes = require("./routes/presensi");
+const reportRoutes = require("./routes/reports");
+const authRoutes = require("./routes/auth");
 
-// Logging Tambahan
+// GLOBAL MIDDLEWARE
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 🔥 STATIC FOLDER UNTUK FOTO SELFIE
+// Bisa diakses via: http://localhost:3001/uploads/namafile.jpg
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// DEBUG REQUEST LOGGER
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log(`📌 [${req.method}] ${req.url}`);
+  console.log("➡ Body:", req.body);
   next();
 });
 
-// ===== 🔥 Import Middleware JWT & Role =====
-const verifyToken = require("./middleware/verifyToken");
-const { addUserData } = require("./middleware/permissionMiddleware");
-
-// ===== 🔥 Pasang middleware untuk SEMUA route kecuali auth =====
-app.use("/api/presensi", verifyToken, addUserData);
-app.use("/api/reports", verifyToken, addUserData);
-
-// ==== Auth route tidak butuh verifyToken ====
-const authRoutes = require("./routes/auth");
+// ROUTES
 app.use("/api/auth", authRoutes);
-
-// ===== Routes =====
-const presensiRoutes = require("./routes/presensi");
-const reportRoutes = require("./routes/report");
-
 app.use("/api/presensi", presensiRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/books", bookRoutes);
 
-// ===== 404 Handler =====
+// ROOT ROUTE
+app.get("/", (req, res) => {
+  res.send("API Server Running...");
+});
+
+// 404 HANDLER
 app.use((req, res) => {
-  res.status(404).json({ message: "Endpoint tidak ditemukan" });
+  res.status(404).json({
+    message: "Endpoint tidak ditemukan",
+  });
 });
 
-// ===== Global Error =====
-app.use((err, req, res, next) => {
-  console.error("Terjadi error:", err.stack);
-  res.status(500).json({ message: "Terjadi kesalahan pada server" });
-});
-
-// ===== Start =====
+// START SERVER
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}/`);
+  console.log(`🚀 Server berjalan di http://localhost:${PORT}`);
 });

@@ -1,89 +1,79 @@
-/* controllers/presensiController.js */
+const presensi = require("../models/presensi");
+const multer = require("multer");
+const path = require("path");
 
-const { Presensi } = require("../models");
+// ===== MULTER SETUP =====
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${req.user.id}-${Date.now()}${path.extname(file.originalname)}`);
+  }
+});
 
-exports.CheckIn = async (req, res) => {
+exports.upload = multer({ storage });
+
+// ===== CHECK-IN =====
+exports.CheckIn = (req, res) => {
   try {
-    // Validasi user dari middleware
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({
-        message: "User tidak ditemukan pada request"
-      });
+    if (!req.user) {
+      return res.status(401).json({ message: "User tidak ditemukan" });
     }
 
     const userId = req.user.id;
     const { latitude, longitude } = req.body;
-    const waktuSekarang = new Date();
 
-    // Cek apakah user sudah check-in (belum check-out)
-    const existingRecord = await Presensi.findOne({
-      where: { userId, checkOut: null }
-    });
+    const masihCheckin = presensi.find(p => p.userId === userId && !p.checkOut);
 
-    if (existingRecord) {
-      return res.status(400).json({
-        message: "Anda sudah melakukan check-in hari ini"
-      });
+    if (masihCheckin) {
+      return res.status(400).json({ message: "Sudah check-in, belum check-out!" });
     }
 
-    // Simpan presensi
-    const newPresensi = await Presensi.create({
+    const record = {
       userId,
-      checkIn: waktuSekarang,
       latitude,
-      longitude
-    });
+      longitude,
+      checkIn: new Date(),
+      checkOut: null,
+      buktiFoto: req.file ? req.file.filename : null
+    };
 
-    return res.status(201).json({
+    presensi.push(record);
+
+    res.status(201).json({
       message: "Check-In berhasil",
-      data: newPresensi
+      data: record
     });
 
-  } catch (error) {
-    console.log("CHECK-IN ERROR:", error);
-    return res.status(500).json({
-      message: "Terjadi kesalahan pada server",
-      error: error.message
-    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
-
-exports.CheckOut = async (req, res) => {
+// ===== CHECK-OUT =====
+exports.CheckOut = (req, res) => {
   try {
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({
-        message: "User tidak ditemukan pada request"
-      });
+    if (!req.user) {
+      return res.status(401).json({ message: "User tidak ditemukan" });
     }
 
     const userId = req.user.id;
-    const waktuSekarang = new Date();
 
-    // Cari presensi yang belum checkout
-    const presensi = await Presensi.findOne({
-      where: { userId, checkOut: null }
-    });
+    const record = presensi.find(p => p.userId === userId && !p.checkOut);
 
-    if (!presensi) {
-      return res.status(404).json({
-        message: "Anda belum melakukan check-in hari ini"
-      });
+    if (!record) {
+      return res.status(404).json({ message: "Belum check-in hari ini" });
     }
 
-    presensi.checkOut = waktuSekarang;
-    await presensi.save();
+    record.checkOut = new Date();
 
-    return res.json({
+    res.json({
       message: "Check-Out berhasil",
-      data: presensi
+      data: record
     });
 
-  } catch (error) {
-    console.log("CHECK-OUT ERROR:", error);
-    return res.status(500).json({
-      message: "Terjadi kesalahan pada server",
-      error: error.message
-    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
